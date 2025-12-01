@@ -1,0 +1,75 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [
+  {name = "Daniel Aik", email = "daniel.aik@uni-potsdam.de"},
+]
+
+dependencies = [
+  "numpy>=1.26,<2",
+  "tifffile==2023.2.28",
+  "pandas==2.2.3",
+  "matplotlib==3.9.2",
+  "ipywidgets==7.7.1",
+  "ipympl==0.9.4",
+  "ipython==8.12.3",
+  "openpyxl==3.1.5",
+  "scipy==1.16.3",
+  "seaborn==0.13.2",
+  "scikit-learn==1.7.2",
+  "scikit-posthocs==0.11.4",
+  "tabulate==0.9.0",
+]
+
+description = "handle output of imaging fcs (fiji plugin)"
+dynamic = ["version"]
+license = {file = "LICENSE"}
+name = "imfcsoutputhandlerlib"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.12"
+
+[project.scripts]
+test-cli = "imfcsoutputhandlerlib.cli.version_check:main"
+
+[tool.hatch.version]
+path = "src/imfcsoutputhandlerlib/__init__.py"
+source = "regex"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/imfcsoutputhandlerlib"]
+
+[tool.hatch.envs.dev]
+dependencies = ["ruff", "pytest", "black", "mypy", "ipykernel", "pipx", "black[jupyter]"] 
+path = ".venv" # hatch env create dev
+
+[tool.hatch.envs.dev.scripts]
+build = "hatch build" # hatch run dev:build 
+format = "black ." # hatch run dev:format
+lint = "ruff check ." # hatch run dev:lint
+test = "pytest -s tests/" # hatch run dev:test
+typecheck = "mypy src/imfcsoutputhandlerlib/" # hatch run dev:typecheck
+verify = "pipx run twine check dist/*" # hatch run dev:verify
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.ruff]
+exclude = [".venv", "build", "dist"]
+fix = false
+ignore = ["E203", "E501"] # Avoid conflict with Black
+line-length = 88
+select = ["E", "F", "I", "B"]
+show-fixes = true
+target-version = "py310"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+exclude = "tests/"
+ignore_missing_imports = true
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true

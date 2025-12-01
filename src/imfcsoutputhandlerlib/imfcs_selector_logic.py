@@ -1,0 +1,44 @@
+from . import util_filename
+
+
+class ImfcsScreenerLogic:
+
+    grouped_files: dict  # dictionary with keys for basename and value with list of associated files
+    keys: list  # list of basename
+    input_path: str  # path to input folder
+
+    def __init__(self, input_path, loaded_group_files: dict = None):
+        if loaded_group_files is None:
+            self.grouped_files = util_filename.get_input_files(input_path=input_path)
+        else:
+            self.grouped_files = loaded_group_files
+        self.keys = list(self.grouped_files.keys())
+        self.input_path = input_path
+
+    def get_next_key(self, current_key) -> str:
+        """Return the next key in the list."""
+        current_index = self.keys.index(current_key)
+        if current_index < len(self.keys) - 1:
+            return self.keys[current_index + 1]
+        return current_key
+
+    def get_previous_key(self, current_key) -> str:
+        """Return the previous key in the list."""
+        current_index = self.keys.index(current_key)
+        if current_index > 0:
+            return self.keys[current_index - 1]
+        return current_key
+
+    def get_files_for_key(self, key) -> list:
+        """Return the files associated with a key."""
+        return self.grouped_files[key]
+
+    def get_intensity_excel_filename(self, key) -> list[str]:
+        associated_files = self.get_files_for_key(key)
+        return util_filename.get_sorted_useful_filenames(input_list=associated_files)
+
+    def get_input_path(self):
+        return self.input_path
+
+    def get_group_files(self):
+        return self.grouped_files
