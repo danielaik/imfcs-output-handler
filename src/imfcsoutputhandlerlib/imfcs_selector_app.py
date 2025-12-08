@@ -17,6 +17,12 @@ from .roi_selector import ROISelector
 
 
 class ImfcsScreenerApp:
+    """
+    High-level application class for the ImFCS screener.
+
+    This class wires together the GUI, logic, processing pipeline, ROI selection,
+    display of analysis, and raw-data loading for an ImFCS screening workflow.
+    """
 
     gui: ImfcsScreenerGUI
     logic: ImfcsScreenerLogic
@@ -32,7 +38,7 @@ class ImfcsScreenerApp:
         self.error_manager = ErrorOutputManager()
         self.gui = ImfcsScreenerGUI(error_manager=self.error_manager)
 
-        # Setup from scratch or previously saved database
+        # Setup from scratch or previously saved database.
         if loaded_database is None:
             self.logic = ImfcsScreenerLogic(input_path=input_path)
             self.list_all_image = AllImage(
@@ -75,17 +81,17 @@ class ImfcsScreenerApp:
             input_folder=self.logic.get_input_path(),
         )
 
-        # Initialize dropdown options and value
+        # Initialize dropdown options and value.
         self.gui.dropdown.options = self.logic.keys
         self.gui.dropdown.value = self.logic.keys[0]
 
-        # Initialize
+        # Initialize.
         self.update_text_area(None)
         self.update_selected_filename_label(None)
         self.update_selected_input_folder()
         self.process.display_selected_image(key=self.gui.dropdown.value)
 
-        # Attach event handlers
+        # Attach event handlers.
         self.gui.debug_button.on_click(self.on_debug_button_clicked)
         self.gui.clear_button.on_click(self.on_clear_button_clicked)
         self.gui.next_button.on_click(lambda b: self.on_next_button_clicked(b, "next"))
@@ -105,16 +111,16 @@ class ImfcsScreenerApp:
         )
 
         for _ in range(5):
-            print()  # Prints an empty line
+            print()  # Prints an empty line.
 
     def on_debug_button_clicked(self, b):
-        # Example Usage: Trigger an error
+        # Example Usage: Trigger an error.
         try:
             raise ValueError("This is a test error!")
         except ValueError as e:
             self.error_manager.display_error(str(e))
 
-        # Example: Clear and hide the error output after handling
+        # Example: Clear and hide the error output after handling.
         time.sleep(3)
         self.error_manager.clear_error()
 

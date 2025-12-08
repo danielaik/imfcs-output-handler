@@ -11,12 +11,19 @@ from .image_info import ImageInfo
 
 
 class OutputDataLoaderSingleThread:
+    """
+    Single-threaded loader for Excel-based output data.
+
+    This class iterates over an ``AllImage`` instance, loading Excel and
+    averaged-intensity data for each ``ImageInfo`` object while updating
+    Jupyter/IPython widgets to show progress.
+    """
 
     list_all_image_object: AllImage
-    total_iterations: int  # number of .xlxs files to be loaded
-    current_progress: int = 0  # keep track of sucessfully loaded files
+    total_iterations: int  # Number of .xlxs files to be loaded.
+    current_progress: int = 0  # Keep track of sucessfully loaded files.
 
-    # Control flag for stopping the loop
+    # Control flag for stopping the loop.
     stop_flag = threading.Event()
     thread: threading.Thread
 
@@ -27,10 +34,10 @@ class OutputDataLoaderSingleThread:
 
     input_folder: str
 
-    # ANSI escape codes for colors
+    # ANSI escape codes for colors.
 
     GREEN = "\033[32m"
-    RESET = "\033[0m"  # Reset to default color
+    RESET = "\033[0m"  # Reset to default color.
 
     def __init__(
         self,
@@ -49,8 +56,7 @@ class OutputDataLoaderSingleThread:
         self.input_folder = input_folder
 
     def _log(self, msg: str):
-        # works well from threads
-        self.output.append_stdout(msg + "\n")
+        self.output.append_stdout(msg + "\n")  # Works well from threads.
 
     def long_process(self):
         """
@@ -59,19 +65,19 @@ class OutputDataLoaderSingleThread:
 
         self._log(f"{self.GREEN}Loading dataset...{self.RESET}")
 
-        self.stop_flag.clear()  # Reset stop flag
+        self.stop_flag.clear()  # Reset stop flag.
 
-        start_time = time.time()  # Start timer
+        start_time = time.time()  # Start timer.
 
         while (
             self.current_progress < self.total_iterations
             and not self.stop_flag.is_set()
         ):
 
-            # Calculate percentage of completion
+            # Calculate percentage of completion.
             percentage = int((self.current_progress + 1) / self.total_iterations * 100)
 
-            # work start
+            # Work start.
             time.sleep(0.1)
 
             im_info = self.list_all_image_object.get_image_info_from_list(
@@ -80,9 +86,9 @@ class OutputDataLoaderSingleThread:
 
             im_info.read_excel_df_and_avr_int(input_folder=self.input_folder)
 
-            # work end
+            # Work end.
 
-            self.current_progress += 1  # Increment progress
+            self.current_progress += 1  # Increment progress.
             self.progress.value = percentage
             self.progress_label.value = f"{percentage}%"
 
@@ -113,18 +119,18 @@ class OutputDataLoaderSingleThread:
         If progress has reached 100% or Stop has been pressed, restart progress.
         """
 
-        if self.current_progress >= self.total_iterations:  # If completed
+        if self.current_progress >= self.total_iterations:  # If completed.
             self.output.clear_output()
             self._log("completed previously")
             return
 
-        if self.stop_flag.is_set() and self.current_progress > 0:  # If stopped
+        if self.stop_flag.is_set() and self.current_progress > 0:  # If stopped.
             self.output.clear_output()
             self._logprint("stopped previously")
             threading.Thread(target=self.long_process).start()
             return
 
-        if not self.stop_flag.is_set():  # Avoid starting multiple threads
+        if not self.stop_flag.is_set():  # Avoid starting multiple threads.
             self.output.clear_output()
             self._log("start")
             self.start_process()
@@ -134,18 +140,26 @@ class OutputDataLoaderSingleThread:
         """
         Stop button callback.
         """
-        self.stop_flag.set()  # Signal the process to stop
+        self.stop_flag.set()  # Signal the process to stop.
         with self.output:
             self.output.clear_output()
             print("Stopping process...")
 
 
 class OutputDataLoaderMultiThread:
+    """
+    Multi-threaded loader for Excel-based output data.
+
+    This class uses a :class:`concurrent.futures.ThreadPoolExecutor` to load
+    Excel and averaged-intensity data for each ``ImageInfo`` object in an
+    ``AllImage`` instance, while updating Jupyter/IPython widgets to show
+    progress.
+    """
 
     list_all_image_object: AllImage
-    total_iterations: int  # number of .xlxs files to be loaded
+    total_iterations: int  # Number of .xlxs files to be loaded.
 
-    # Control flag for stopping the loop
+    # Control flag for stopping the loop.
     stop_flag = threading.Event()
     thread: threading.Thread
 
@@ -157,7 +171,7 @@ class OutputDataLoaderMultiThread:
     input_folder: str
 
     GREEN = "\033[32m"
-    RESET = "\033[0m"  # Reset to default color
+    RESET = "\033[0m"  # Reset to default color.
 
     def __init__(
         self,
@@ -179,7 +193,7 @@ class OutputDataLoaderMultiThread:
         self.input_folder = input_folder
         self.progress_checklist = [False for _ in range(self.total_iterations)]
         self.thread = None
-        self.stop_flag = threading.Event()  # Use threading.Event for stop_flag
+        self.stop_flag = threading.Event()  # Use threading.Event for stop_flag.
         self.stop_flag.clear()
 
     def process_data(self, im_info: ImageInfo):
@@ -193,9 +207,9 @@ class OutputDataLoaderMultiThread:
         Run the long process in a thread, respecting the stop_flag.
         """
         print(f"{self.GREEN}Loading dataset...{self.RESET}")
-        self.stop_flag.clear()  # Reset the stop flag
+        self.stop_flag.clear()  # Reset the stop flag.
 
-        start_time = time.time()  # Start timer
+        start_time = time.time()  # Start timer.
 
         # with self.output:
         # consider ProcessPoolExecutor() for CPU heavy performance instead of ThreadPoolExecutor
@@ -217,14 +231,14 @@ class OutputDataLoaderMultiThread:
 
                 result = future.result()
 
-                # get the index of image to be processed with respect to list_image
+                # Get the index of image to be processed with respect to list_image.
                 assert isinstance(
                     result, type(self.list_all_image_object.get_list_of_image()[0])
                 ), "different type error RawDataLoaderMultiThread class"
                 index = self.list_all_image_object.get_list_of_image().index(result)
                 self.progress_checklist[index] = True
 
-                # Update progress bar
+                # Update progress bar.
                 percentage = int(
                     sum(self.progress_checklist) / self.total_iterations * 100
                 )
@@ -235,7 +249,7 @@ class OutputDataLoaderMultiThread:
                 )
 
         if not self.stop_flag.is_set():
-            end_time = time.time()  # End timer
+            end_time = time.time()  # End timer.
             elapsed_time = end_time - start_time
             print(
                 f"{self.GREEN}Process completed in {elapsed_time:.2f} seconds.{self.RESET}"
@@ -254,16 +268,16 @@ class OutputDataLoaderMultiThread:
         Start button callback.
         """
 
-        if sum(self.progress_checklist) >= self.total_iterations:  # If completed
+        if sum(self.progress_checklist) >= self.total_iterations:  # If completed.
             # print("completed previously")
             return
 
-        if self.stop_flag.is_set() and sum(self.progress_checklist) > 0:  # If stopped
+        if self.stop_flag.is_set() and sum(self.progress_checklist) > 0:  # If stopped.
             # print("stopped previously")
             threading.Thread(target=self.long_process).start()
             return
 
-        if not self.stop_flag.is_set():  # Avoid starting multiple threads
+        if not self.stop_flag.is_set():  # Avoid starting multiple threads.
             # print("start")
             self.start_process()
             return
@@ -273,7 +287,7 @@ class OutputDataLoaderMultiThread:
         Stop button callback.
         """
 
-        self.stop_flag.set()  # Signal the process to stop
+        self.stop_flag.set()  # Signal the process to stop.
 
         with self.output:
             print("Stopping process...")

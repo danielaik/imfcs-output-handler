@@ -12,6 +12,16 @@ from .roi_selector import ROISelector
 
 
 class ImfcsScreenerProcess:
+    """
+    Processing layer connecting logic, GUI, ROI selection, and analysis display.
+
+    This class provides methods to:
+
+    - Display the selected image in the GUI.
+    - Manage ROI selection and store selected coordinates in ``AllImage``.
+    - Trigger and update analysis plots based on ROI selection.
+    - Optionally read and visualize raw data files.
+    """
 
     logic: ImfcsScreenerLogic
     gui: ImfcsScreenerGUI
@@ -34,7 +44,7 @@ class ImfcsScreenerProcess:
         self.display_analysis = display_analysis
 
     def display_selected_image(self, key):
-        # tiffile read image everytime function is called. Consider storing value for faster performance at expense of memory
+        # tiffile read image everytime function is called. Consider storing value for faster performance at expense of memory.
         to_be_process_fn = self.logic.get_intensity_excel_filename(key)
         output = self.gui.selected_image_output
         input_path = self.logic.get_input_path()
@@ -72,11 +82,11 @@ class ImfcsScreenerProcess:
             avr_intensity = tifffile.imread(path_avr)
 
             def handle_coords(coords):
-                # store selected coordinate
+                # Store selected coordinate.
                 im = self.list_all_image.get_image_info(key)
                 im.add_coordinates(coordinate=coords)
 
-                # if toggle display analysis is on
+                # If toggle display analysis is on.
                 if self.gui.display_analysis_toggle_button.value:
                     current_coordinates = self.list_all_image.get_image_info(
                         key

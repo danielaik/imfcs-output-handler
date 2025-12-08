@@ -1,9 +1,10 @@
 import os
 
-from . import read_excel_imfcs_saved as imfcsread
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import ttest_ind
+
+from . import read_excel_imfcs_saved as imfcsread
 
 
 class Psf:
@@ -16,7 +17,7 @@ class Psf:
         "Image height",
         "Overlap",
     ]
-    RSD_t: float  # exclude points where std dev / mean ratio goes beyond 100%
+    RSD_t: float  # Exclude points where std dev / mean ratio goes beyond 100%.
 
     input_path: str
     filename: str
@@ -41,13 +42,13 @@ class Psf:
 
         a_size, b_size, c_size = arr.shape
 
-        # Create the plot
+        # Create the plot.
         fig, axs = plt.subplots(1, 3, figsize=(18, 5))
 
-        ## Plot 1 - D values at different combiantion of binning and PSF
+        ## Plot 1 - D values at different combiantion of binning and PSF.
         for a in range(a_size):
             x_values = np.arange(param["bin start"], param["bin end"] + 1)
-            # Mask invalid points based on RSD_tres
+            # Mask invalid points based on RSD_tres.
             y_values = arr[a, :, 0]
             y_ratios = arr[a, :, 1] / y_values
             y_mask = y_ratios > RSD_tres
@@ -74,15 +75,15 @@ class Psf:
         x_limits = axs[0].get_xlim()
         y_limits = axs[0].get_ylim()
 
-        ## Plot 2 - Linear Fits with Highlighted Min Slope
+        ## Plot 2 - Linear Fits with Highlighted Min Slope.
 
-        # Initialize lists to store slopes and intercepts
+        # Initialize lists to store slopes and intercepts.
         self.slopes = []
         self.intercepts = []
 
         for a in range(a_size):
             x_values = np.arange(param["bin start"], param["bin end"] + 1)
-            # Mask invalid points based on RSD_tres
+            # Mask invalid points based on RSD_tres.
             y_values = arr[a, :, 0]
             y_ratios = arr[a, :, 1] / y_values
             y_mask = y_ratios > RSD_tres
@@ -90,41 +91,41 @@ class Psf:
             y_values[y_mask] = np.nan
             y_errors[y_mask] = np.nan
 
-            # Remove NaN values for fitting
+            # Remove NaN values for fitting.
             valid_mask = ~np.isnan(y_values)
             x_valid = x_values[valid_mask]
             y_valid = y_values[valid_mask]
 
-            # Fit a straight line if valid data exists
+            # Fit a straight line if valid data exists.
             if len(x_valid) > 1:
                 slope, intercept = np.polyfit(x_valid, y_valid, deg=1)
                 self.slopes.append(slope)
                 self.intercepts.append(intercept)
             else:
-                # Store NaN if not enough points for a fit
+                # Store NaN if not enough points for a fit.
                 self.slopes.append(np.nan)
                 self.intercepts.append(np.nan)
 
-        # Find the index of the line with the smallest slope closer to zero
+        # Find the index of the line with the smallest slope closer to zero.
         valid_slopes = np.array(self.slopes)
         valid_slopes[np.isnan(valid_slopes)] = (
             np.inf
-        )  # Replace NaN with infinity to exclude them
+        )  # Replace NaN with infinity to exclude them.
         self.min_slope_index = np.argmin(np.abs(valid_slopes))
         print(f"min slope index: {self.min_slope_index}")
         print(f"slope: {self.slopes[self.min_slope_index]}")
 
-        # Find the correct PSF parameter
+        # Find the correct PSF parameter.
         self.correct_psf_param = param["psf start"] + (
             self.min_slope_index * param["psf step"]
         )
         print(f"correct psf param: {self.correct_psf_param:.1f}")
 
-        # Plot the lines
+        # Plot the lines.
         for a in range(a_size):
-            # Only plot lines for valid fits
+            # Only plot lines for valid fits.
             if a == self.min_slope_index:
-                # Highlight the line with the smallest slope in red
+                # Highlight the line with the smallest slope in red.
                 y_fit = self.slopes[a] * x_values + self.intercepts[a]
                 axs[1].plot(
                     x_values,
@@ -134,11 +135,11 @@ class Psf:
                     label=f"PSF params. ({self.correct_psf_param:.1f})",
                 )
             elif not np.isnan(self.slopes[a]):
-                # Plot other lines in black
+                # Plot other lines in black.
                 y_fit = self.slopes[a] * x_values + self.intercepts[a]
                 axs[1].plot(x_values, y_fit, "k-", linewidth=1)
 
-        # Show the plot
+        # Show the plot.
         axs[1].set_title("Linear Fits with Highlighted Min Slope")
         axs[1].set_xlabel("Pixel binning")
         axs[1].set_ylabel(r"Diffusion coefficient [$\mu m^2 /s$]")

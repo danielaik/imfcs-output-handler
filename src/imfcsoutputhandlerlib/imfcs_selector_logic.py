@@ -2,10 +2,19 @@ from . import util_filename
 
 
 class ImfcsScreenerLogic:
+    """
+    Logic layer for managing input files and navigation in the ImFCS screener.
 
-    grouped_files: dict  # dictionary with keys for basename and value with list of associated files
-    keys: list  # list of basename
-    input_path: str  # path to input folder
+    This class is responsible for:
+    - Discovering and grouping input files by basename.
+    - Providing ordered keys for navigation.
+    - Returning file lists associated with each key.
+
+    """
+
+    grouped_files: dict  # Dictionary with keys for basename and value with list of associated files.
+    keys: list  # List of basename.
+    input_path: str  # Path to input folder.
 
     def __init__(self, input_path, loaded_group_files: dict = None):
         if loaded_group_files is None:

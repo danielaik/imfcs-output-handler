@@ -5,6 +5,14 @@ from matplotlib.widgets import RectangleSelector
 
 
 class ROISelector:
+    """
+    Interactive rectangular ROI (region-of-interest) selector for 2D images.
+
+    This class displays an image inside a Jupyter/IPython
+    ``ipywidgets.Output`` widget and allows the user to draw a rectangular
+    ROI using ``matplotlib.widgets.RectangleSelector``. The selected ROI
+    is reported via a callback and shown in a label.
+    """
 
     output: widgets.Output
 
@@ -18,7 +26,7 @@ class ROISelector:
         self.coordinates_label = widgets.Label(value="No selection made yet.")
         self.output = output
 
-    # Callback function for rectangle selection
+    # Callback function for rectangle selection.
     def onselect(self, eclick, erelease):
         """
         Callback for rectangle selection.
@@ -33,7 +41,7 @@ class ROISelector:
 
         self.coordinates_label.value = f"ROI Selected: {list(coords.values())}."
 
-        # Call the user-provided callback function, if available
+        # Call the user-provided callback function, if available.
         if self.callback:
             self.callback(coords)
 
@@ -61,11 +69,11 @@ class ROISelector:
         with self.output:
             self.output.clear_output(wait=True)
 
-            # Get the widget's dimensions in pixels
+            # Get the widget's dimensions in pixels.
             widget_width = int(self.output.layout.width.replace("px", "")) - 120
             widget_height = int(self.output.layout.height.replace("px", "")) - 120
 
-            # Convert widget dimensions to inches for the figure
+            # Convert widget dimensions to inches for the figure.
             dpi = 100  # Default DPI
             fig_width_in = widget_width / dpi
             fig_height_in = widget_height / dpi
@@ -74,7 +82,7 @@ class ROISelector:
             self.ax.imshow(array[index, :, :], cmap=cmap)
             self.ax.set_title("Drag to select a region-of-interest (ROI)")
 
-            # Initialize RectangleSelector
+            # Initialize RectangleSelector.
             self.rectangle_selector = RectangleSelector(
                 self.ax,
                 self.onselect,
@@ -82,9 +90,9 @@ class ROISelector:
                 button=[1],
                 minspanx=5,
                 minspany=5,
-            )  # Minimum size for the rectangle
+            )  # Minimum size for the rectangle.
 
-            # Display
+            # Display.
             display(widgets.VBox([self.coordinates_label, self.fig.canvas]))
 
         self._show_output()

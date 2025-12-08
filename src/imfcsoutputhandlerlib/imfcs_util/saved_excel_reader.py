@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 
 def check_matching_metadata():
-    # iterate through metadata file for all basename and check for matching parameters
+    # Iterate through metadata file for all basename and check for matching parameters.
     pass
 
 
@@ -21,12 +21,12 @@ def get_param(excel_data: pd.DataFrame, panel_param: list[str]):
         "Panel Parameters" in excel_data.sheet_names
     ), "Panel Parameters is not in the sheet"
 
-    # Extract Image width and Image height based on their parameter names
+    # Extract Image width and Image height based on their parameter names.
     panel_parameters_sheet = excel_data.parse(
         sheet_name="Panel Parameters", header=None
     )
 
-    first_column = panel_parameters_sheet.iloc[:, 0]  # First column by index
+    first_column = panel_parameters_sheet.iloc[:, 0]  # First column by index.
     values = []
     for j in panel_param:
         index = first_column[first_column == j].index
@@ -43,7 +43,7 @@ def get_lagtimes(excel_data: pd.DataFrame):
     sn = "lagtime"
     assert sn in excel_data.sheet_names, f"{sn} is not in the sheet"
 
-    # Load lagtimes
+    # Load lagtimes.
     lagtime_sheet = excel_data.parse(sheet_name=sn, header=None)
     lagtimes = lagtime_sheet.iloc[1:, 1].to_numpy()
 
@@ -53,8 +53,8 @@ def get_lagtimes(excel_data: pd.DataFrame):
 def get_cfs(
     excel_data: pd.DataFrame, width: int, height: int, num_lag: int, sheet_name: str
 ):
-    # TODO: slow. can be improved 1) convert panda to numpy 2) Use numpy Directly for Numeric Sheets
-    # Sheet names: "ACF1", "SD (ACF1)", "Fit functions (ACF1)"
+    # TODO: slow. can be improved 1) convert panda to numpy 2) Use numpy Directly for Numeric Sheets.
+    # Sheet names: "ACF1", "SD (ACF1)", "Fit functions (ACF1)".
     assert sheet_name in excel_data.sheet_names, f"{sheet_name} is not in the sheet"
 
     sheet = excel_data.parse(sheet_name=sheet_name, header=None)
@@ -70,7 +70,7 @@ def get_cfs(
 
 
 def get_fit_param(excel_data: pd.DataFrame, width: int, height: int, sheet_name: str):
-    # Sheet names: "Fit Parameters (ACF1)", "Fit Parameters (ACF2)", "Fit Parameters (CCF)"
+    # Sheet names: "Fit Parameters (ACF1)", "Fit Parameters (ACF2)", "Fit Parameters (CCF)".
     assert sheet_name in excel_data.sheet_names, f"{sheet_name} is not in the sheet"
 
     sheet = excel_data.parse(sheet_name=sheet_name, header=None)
@@ -79,8 +79,8 @@ def get_fit_param(excel_data: pd.DataFrame, width: int, height: int, sheet_name:
 
 
 def get_fit_results(excel_data: pd.DataFrame, width: int, height: int, sheet_name: str):
-    # TODO: slow. can be improved 1) convert panda to numpy 2) Use numpy Directly for Numeric Sheets
-    # Sheet names: "Fit Parameters (ACF1)", "Fit Parameters (ACF2)", "Fit Parameters (CCF)"
+    # TODO: slow. can be improved 1) convert panda to numpy 2) Use numpy Directly for Numeric Sheets.
+    # Sheet names: "Fit Parameters (ACF1)", "Fit Parameters (ACF2)", "Fit Parameters (CCF)".
     assert sheet_name in excel_data.sheet_names, f"{sheet_name} is not in the sheet"
 
     sheet = excel_data.parse(sheet_name=sheet_name, header=None)
@@ -92,13 +92,13 @@ def get_fit_results(excel_data: pd.DataFrame, width: int, height: int, sheet_nam
 
     res = np.zeros((height, width, num_param), dtype=float)
 
-    # fill N, D, .. valid pixels onwards
+    # Fill N, D, .. valid pixels onwards.
     for i in range(height):
         for j in range(width):
             row_idx = j + (i * height) + 1
             res[i, j, 1:] = sheet.iloc[row_idx, 2:]
 
-    # fill fitted
+    # Fill fitted.
     for i in range(height):
         for j in range(width):
             row_idx = j + (i * height) + 1
@@ -120,7 +120,7 @@ def get_psf(excel_data: pd.DataFrame):
     search_value = "PSF start"
     row_index = int(sheet[sheet.iloc[:, 0] == search_value].index[0]) + 1
 
-    # reading psf calibration parameter
+    # Reading psf calibration parameter.
     parameters = {
         "psf start": float(sheet.iloc[row_index, 0]),
         "psf end": float(sheet.iloc[row_index, 1]),
@@ -137,7 +137,7 @@ def get_psf(excel_data: pd.DataFrame):
         "bin end": int(sheet.iloc[1, 0]) + row_index - 3 - 1,
     }
 
-    # Fill array with D and std D for each combination of pixel bin and PSF value
+    # Fill array with D and std D for each combination of pixel bin and PSF value.
     arr = np.zeros((parameters["num psf"], parameters["num bin"], 2), dtype=float)
 
     for i in range(parameters["num psf"]):

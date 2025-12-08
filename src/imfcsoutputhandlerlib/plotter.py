@@ -7,11 +7,6 @@ from IPython.display import display
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.patches import Rectangle
 
-"""
-## Plotter for Image Selector Window
-# plot_selected_image_full_frame(..)
-"""
-
 
 def plot_selected_image_full_frame(
     output: widgets.Output,
@@ -28,16 +23,16 @@ def plot_selected_image_full_frame(
 
         output.clear_output(wait=True)
 
-        # Get the widget's dimensions in pixels
+        # Get the widget's dimensions in pixels.
         widget_width = int(output.layout.width.replace("px", ""))
         widget_height = int(output.layout.height.replace("px", ""))
 
-        # Convert widget dimensions to inches for the figure
+        # Convert widget dimensions to inches for the figure.
         dpi = 100  # Default DPI
         fig_width_in = widget_width / dpi
         fig_height_in = widget_height / dpi
 
-        # Create a figure with adjusted size
+        # Create a figure with adjusted size.
         fig = plt.figure(figsize=(fig_width_in, fig_height_in))
 
         # fig = plt.figure(figsize=(3, 3))
@@ -59,7 +54,7 @@ def plot_selected_image_full_frame(
             )
             ax.add_patch(rect)
 
-        plt.close(fig)  # supress interactive notebook line output
+        plt.close(fig)  # Supress interactive notebook line output.
         display(fig)
 
 
@@ -77,29 +72,54 @@ def plot_selected_image_full_frame(
 
 def calculate_nrmsd(observed: np.array, predicted: np.array, N_fit: np.array):
     """
-    Calculate the residual mean square displacement (RMSD) for each combination of n and m using vectorized operations.
+    Compute the normalized root-mean-square deviation (NRMSD) between
+    observed and predicted correlation curves.
 
-    Parameters:
-    observed (numpy.ndarray): A 3D array of observed values with shape [n, m, t].
-    predicted (numpy.ndarray): A 3D array of predicted values with the same shape as `observed`.
-    N_fit (numpy.ndarray): A 2D array of fitted N for normalisation
+    Parameters
+    ----------
+    observed : numpy.ndarray
+        3D array of observed values with shape ``(n, m, t)``, where:
+        - ``n`` is the number of rows,
+        - ``m`` is the number of columns,
+        - ``t`` is the number of lag times.
+    predicted : numpy.ndarray
+        3D array of predicted values with the same shape as ``observed``.
+    N_fit : numpy.ndarray
+        2D array of normalization factors with shape ``(n, m)``.
+        Each value corresponds to the estimated particle number ``N`` at each pixel.
 
-    Returns:
-    numpy.ndarray: A 2D array of RMSD values with shape [n, m], where each element corresponds to the RMSD for a specific (n, m) combination.
+    Returns
+    -------
+    numpy.ndarray
+        2D array of NRMSD values with shape ``(n, m)``, where each element
+        represents the NRMSD for the corresponding pixel.
+
+    Notes
+    -----
+    - Lag time index 0 is excluded from the NRMSD calculation.
+    - NRMSD is computed as:
+
+      ``NRMSD(n, m) = sqrt(sum((observed - predicted)^2)) * N_fit``
+
+    Raises
+    ------
+    ValueError
+        If ``observed`` and ``predicted`` do not have matching shapes.
     """
+
     if observed.shape != predicted.shape:
         raise ValueError("Observed and predicted arrays must have the same shape.")
 
-    # Calculate residuals, square them, and take the mean along the last axis (t)
-    # Exclude time lag 0
+    # Calculate residuals, square them, and take the mean along the last axis (t).
+    # Exclude time lag = 0.
     residuals_squared_mean = np.sum(
         (observed[:, :, 1:] - predicted[:, :, 1:]) ** 2, axis=2
     )
 
-    # Compute the square root of the mean residuals to get RMSD
+    # Compute the square root of the mean residuals to get RMSD.
     rmsd_matrix = np.sqrt(residuals_squared_mean)
 
-    # Normalisation
+    # Normalisation.
     rmsd_matrix *= N_fit
 
     return rmsd_matrix
@@ -107,14 +127,41 @@ def calculate_nrmsd(observed: np.array, predicted: np.array, N_fit: np.array):
 
 def calculate_snr(cf: np.array, last_lag: int = 6):
     """
-    Calculate the signal to noise ratio (SNR) of correlation function for each combination of n and m using vectorized operations.
+    Compute the signal-to-noise ratio (SNR) of an autocorrelation function (ACF)
+    for each pixel using vectorized operations.
 
-    Parameters:
-    cf (numpy.ndarray): A 3D array of cf values with shape [n, m, t].
-    last_lag (int): number of first few lag times (N) of an autocorrelationfunction used in calculation
+    Parameters
+    ----------
+    cf : numpy.ndarray
+        3D array of autocorrelation values with shape ``(n, m, t)``, where:
+        - ``n`` : number of rows (pixels along axis 0)
+        - ``m`` : number of columns (pixels along axis 1)
+        - ``t`` : number of lag times
+    last_lag : int, optional
+        Number of initial lag times (starting from lag index 1) used for
+        computing the SNR. Default is ``6``, meaning lag times ``1`` to ``5``
+        are included.
 
-    Returns:
-    numpy.ndarray: A 2D array of SNR values with shape [n, m], where each element corresponds to the SNR for a specific (n, m) combination.
+    Returns
+    -------
+    numpy.ndarray
+        2D array of shape ``(n, m)`` containing the SNR for each pixel.
+
+    Notes
+    -----
+    - Lag time index ``0`` is excluded because it contains the autocorrelation
+      amplitude and does not represent noise behavior.
+    - SNR is defined as:
+
+      ``SNR = mean(cf[lag 1 : lag N]) / std(cf[lag 1 : lag N])``
+
+    - Division by zero will produce ``inf`` or ``nan`` in accordance with
+      NumPy's broadcasting rules.
+
+    Raises
+    ------
+    ValueError
+        If ``last_lag`` is less than or equal to 1.
     """
 
     mean = np.mean(cf[:, :, 1:last_lag], axis=2)
@@ -159,14 +206,14 @@ def plot_acfs(
                     arr_lag[1:], arr_fit[n, m, 1:], color=col_profile[1], alpha=0.3
                 )
 
-    # Add titles, labels, and grid
+    # Add titles, labels, and grid.
     axs.set_title("Autocorrelation Function")
     axs.set_xlabel(r"Time lag $[s]$")
     axs.set_ylabel(r"G$(0)$")
     axs.grid(False)
     axs.set_xscale("log")
 
-    # aspect ratio
+    # Aspect ratio.
     xmin, xmax = axs.get_xlim()
     ymin, ymax = axs.get_ylim()
     x_range = math.log(xmax - xmin)
@@ -185,7 +232,7 @@ def plot_intensity_projection(
     fig: plt.figure = None,
 ):
 
-    # Validate input array
+    # Validate input array.
     if array.ndim != 3:
         raise ValueError("Input array must have 3 dimensions (t, h, w).")
 
@@ -207,11 +254,11 @@ def plot_intensity_projection(
     ax1 = fig.add_subplot(gs[0 // cols, 0 % cols])  # Grid layout
     ax2 = fig.add_subplot(gs[1 // cols, 1 % cols])  # Grid layout
 
-    # Plot full frame pic with rectangular selection
+    # Plot full frame pic with rectangular selection.
     ax1.imshow(array[index, :, :], cmap=cmap)
     ax1.set_title(f"Intensity projection")
-    ax1.axis("off")  # Hide axes for a cleaner display
-    # Add a red rectangle
+    ax1.axis("off")  # Hide axes for a cleaner display.
+    # Add a red rectangle.
     rect = Rectangle(
         (xy_coordinate[0], xy_coordinate[1]),
         xy_coordinate[2],
@@ -222,7 +269,7 @@ def plot_intensity_projection(
     )
     ax1.add_patch(rect)
 
-    # Plot the zoomed-in picture
+    # Plot the zoomed-in picture.
     ax2.imshow(
         array[
             index,
@@ -232,7 +279,7 @@ def plot_intensity_projection(
         cmap=cmap,
     )
     ax2.set_title(f"Zoomed")
-    ax2.axis("off")  # Hide axes for a cleaner display
+    ax2.axis("off")  # Hide axes for a cleaner display.
 
 
 def plot_histograms_with_heatmaps(
@@ -242,56 +289,56 @@ def plot_histograms_with_heatmaps(
     if len(data.shape) != 3:
         raise ValueError("Input data must be a 3D array (M, N, K).")
 
-    # Check if indices are valid
+    # Check if indices are valid.
     for index in indices:
         if index < 0 or index >= data.shape[2]:
             raise IndexError(f"Index must be in the range [0, {data.shape[2] - 1}].")
 
-    # Validate labels length
+    # Validate labels length.
     if labels and len(labels) != len(indices):
         raise ValueError("The length of labels must match the number of indices.")
 
-    # Create subplots
+    # Create subplots.
     n = len(indices)
-    cols = min(3, n)  # Up to 3 columns per row
-    rows = (n + cols - 1) // cols  # Calculate the required number of rows
+    cols = min(3, n)  # Up to 3 columns per row.
+    rows = (n + cols - 1) // cols  # Calculate the required number of rows.
 
     if (gs is None) or (fig is None):
         fig = plt.figure(figsize=(cols * 6, rows * 6))
-        gs = GridSpec(rows, cols, figure=fig)  # GridSpec for flexible layout
+        gs = GridSpec(rows, cols, figure=fig)  # GridSpec for flexible layout.
     else:
-        # Create a 1-row, 3-column GridSpecFromSubplotSpec
+        # Create a 1-row, 3-column GridSpecFromSubplotSpec.
         sub_gs = GridSpecFromSubplotSpec(
             rows, cols, subplot_spec=gs, wspace=0.2, hspace=0.5
         )
         gs = sub_gs
 
     for i, index in enumerate(indices):
-        # Extract the 2D slice
+        # Extract the 2D slice.
         heatmap_data = data[:, :, index]
-        flat_data = heatmap_data.flatten()  # Flatten the 2D array for the histogram
+        flat_data = heatmap_data.flatten()  # Flatten the 2D array for the histogram.
 
-        # Subplot for combined visualization
-        ax_hist = fig.add_subplot(gs[i // cols, i % cols])  # Grid layout
+        # Subplot for combined visualization.
+        ax_hist = fig.add_subplot(gs[i // cols, i % cols])  # Grid layout.
         ax_hist.hist(flat_data, bins=20, color="gray", alpha=0.7, edgecolor="black")
 
-        # Determine the title for each subplot
+        # Determine the title for each subplot.
         title = labels[i] if labels else f"Index {index}"
         ax_hist.set_title(f"Histogram & Heatmap\n{title}")
         ax_hist.set_xlabel(labels[i])
         if i == 0:
             ax_hist.set_ylabel("Frequency")
 
-        # Inset for the heatmap
+        # Inset for the heatmap.
         ax_heatmap = ax_hist.inset_axes(
             [0.56, 0.55, 0.4, 0.4]
         )  # [x, y, width, height] in figure fraction
         heatmap = ax_heatmap.imshow(heatmap_data, cmap=cmap)
-        ax_heatmap.axis("off")  # Hide axes for the heatmap
+        ax_heatmap.axis("off")  # Hide axes for the heatmap.
 
-        # Display mean and standard deviation as text
-        text_x = 0.9  # Adjust x-position of the text
-        text_y = 0.5  # Adjust y-position of the text
+        # Display mean and standard deviation as text.
+        text_x = 0.9  # Adjust x-position of the text.
+        text_y = 0.5  # Adjust y-position of the text.
         ax_hist.text(
             text_x,
             text_y,
@@ -348,7 +395,7 @@ def plot_two_histograms(
         if i == 0:
             ax.set_ylabel(ylabel if not density else "Probability")
 
-        # Add a text box with mean ± std dev
+        # Add a text box with mean ± std dev.
         textstr = f"Mean ± Std Dev: {np.mean(data):.2f} ± {np.std(data):.2f}"
         ax.text(
             0.95,
@@ -363,7 +410,7 @@ def plot_two_histograms(
 
     if (axs1 is None) or (axs2 is None):
         plt.tight_layout()
-        plt.show()  # Show the figure only if new axes were created
+        plt.show()  # Show the figure only if new axes were created.
 
 
 def plot_combined_analysis_imfcs(
@@ -386,22 +433,22 @@ def plot_combined_analysis_imfcs(
         with output:
             output.clear_output(wait=True)
 
-            # Get the widget's dimensions in pixels
+            # Get the widget's dimensions in pixels.
             widget_width = int(output.layout.width.replace("px", ""))
             widget_height = int(output.layout.height.replace("px", ""))
 
-            # Convert widget dimensions to inches for the figure
+            # Convert widget dimensions to inches for the figure.
             dpi = 100  # Default DPI
             fig_width_in = widget_width / dpi
             fig_height_in = widget_height / dpi
 
-            # Create a custom grid layout using gridspec
+            # Create a custom grid layout using gridspec.
             fig = plt.figure(figsize=(fig_width_in, fig_height_in))
             gs = GridSpec(
                 3, 2, figure=fig, wspace=0.1, hspace=0.5
-            )  # Updated to 3 rows for flexibility
+            )  # Updated to 3 rows for flexibility.
 
-            # Create individual axes
+            # Create individual axes.
             ax1a = fig.add_subplot(gs[0, 0])  # Top-left subplot
             # ax1b = fig.add_subplot(gs[0, 1])  # Top-right subplot
             ax3a = fig.add_subplot(gs[2, 0])  # 2nd row left
@@ -409,7 +456,7 @@ def plot_combined_analysis_imfcs(
 
             # fig.delaxes(ax1b)
 
-            # calculate nRMSD and SNR
+            # Calculate nRMSD and SNR.
             nrmsd = calculate_nrmsd(
                 observed=acf[
                     xy_coordinate[1] : xy_coordinate[1] + xy_coordinate[3],
@@ -437,7 +484,7 @@ def plot_combined_analysis_imfcs(
                 last_lag=6,
             )
 
-            # Plot individual components
+            # Plot individual components.
             plot_acfs(
                 arr_acf=acf[
                     xy_coordinate[1] : xy_coordinate[1] + xy_coordinate[3],
@@ -492,11 +539,11 @@ def plot_combined_analysis_imfcs(
             display(fig)
 
     else:
-        # Create a custom grid layout using gridspec
+        # Create a custom grid layout using gridspec.
         fig = plt.figure(figsize=(14, 12))
         gs = GridSpec(
             3, 2, figure=fig, wspace=0.1, hspace=0.5
-        )  # Updated to 3 rows for flexibility
+        )  # Updated to 3 rows for flexibility.
 
         # Create individual axes
         ax1a = fig.add_subplot(gs[0, 0])  # Top-left subplot
@@ -506,7 +553,7 @@ def plot_combined_analysis_imfcs(
 
         # fig.delaxes(ax1b)
 
-        # calculate nRMSD and SNR
+        # Calculate nRMSD and SNR.
         nrmsd = calculate_nrmsd(
             observed=acf[
                 xy_coordinate[1] : xy_coordinate[1] + xy_coordinate[3],
@@ -534,7 +581,7 @@ def plot_combined_analysis_imfcs(
             last_lag=6,
         )
 
-        # Plot individual components
+        # Plot individual components.
         plot_acfs(
             arr_acf=acf[
                 xy_coordinate[1] : xy_coordinate[1] + xy_coordinate[3],

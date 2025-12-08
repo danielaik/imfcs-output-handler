@@ -2,6 +2,11 @@ import ipywidgets as widgets
 
 
 class ErrorOutputManager:
+    """
+    Displaying error messages in a Jupyter
+    ``ipywidgets.Output`` area.
+    """
+
     _instance = None
 
     def __new__(cls):

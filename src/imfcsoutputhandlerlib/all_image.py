@@ -6,7 +6,7 @@ from .image_info import ImageInfo
 
 class AllImage:
     """
-    A class to store list of images.
+    Container class for storing and managing a collection of ``ImageInfo`` objects.
     """
 
     experiment_name: str
@@ -24,14 +24,15 @@ class AllImage:
 
         print(f"Total files: {len(self.list_image_info_object)}")
 
-    # TODO: Handling Missing or Changed Methods
+    # TODO: Handling Missing or Changed Methods.
     def __setstate__(self, state):
         """
-        Called during unpickling to handle missing attributes or methods.
+        Restore object state during unpickling,
+        including fallback handling for missing attributes or methods from older versions.
         """
         self.__dict__.update(state)
 
-        # Handle missing methods by adding defaults
+        # Handle missing methods by adding defaults.
         if not hasattr(self, "new_method"):
             self.new_method = self._default_new_method
             print("Missing 'new_method'. Added default implementation.")
@@ -44,17 +45,17 @@ class AllImage:
             self.list_image_info_object = []
             print("Missing 'list_image_info_object'. Initialized empty.")
 
-        if not hasattr(self, "experiment_name"):  # Fix potential typos
+        if not hasattr(self, "experiment_name"):  # Fix potential typos.
             self.experiment_name = "Unknown Experiment"
             print("Missing 'experiment_name'. Initialized 'Unknown Experiment'.")
 
     def append(self, obj):
         self.list_image_info_object.append(obj)
 
-    # Searching for an object by key
+    # Searching for an object by key.
     def get_image_info(self, key):
         """
-        Get an ImageInfo object from the list by its key, store coordinates.
+        Retrieve an ``ImageInfo`` object by its key.
         """
         for image in self.list_image_info_object:
             if image.key == key:
@@ -73,14 +74,13 @@ class AllImage:
     def __len__(self):
         return len(self.list_image_info_object)
 
-    # Pickle Save & Load with Auto-Population
     def save(self, filename: str):
-        """Save the object as a pickle file."""
+        """Save the object to a pickle file."""
         with open(filename, "wb") as f:
             pickle.dump(self, f)
         print(f"Object saved to {filename}")
 
-    # TODO: New Default Method for Backward Compatibility
+    # TODO: New Default Method for Backward Compatibility.
     def _default_new_method(self):
         """Default implementation of a new method in case an old pickled object lacks it."""
         print("This is a default implementation for a missing method.")

@@ -7,6 +7,9 @@ from .image_info import ImageInfo
 
 
 class DisplayAnalysis:
+    """
+    A utility class for displaying analysis plots inside an IPython/Jupyter.
+    """
 
     output: widgets.Output
     fig: plt.figure
