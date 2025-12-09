@@ -13,8 +13,8 @@ Handle output of ImagingFCS (FIJI plugin)
 5. `hatch shell dev` to enter the environment, `exit`to exit
 6. Run notebooks
 
-   - `01_batch_screening.ipynb`to screen all batch processed files
-   - For analysis example see `03_analyse.ipynb`
+   - `BatchScreening.ipynb`to screen all batch processed files
+   - For analysis example see `AnalyseBatch.ipynb`
 
 ### Testing the package from other environemnt (target)
 
