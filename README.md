@@ -26,4 +26,6 @@ Handle output of ImagingFCS (FIJI plugin)
 
 ## Raw data
 
-Raw datas are available upon request or can be downlowded here XX
+The membrane fluidity analysis performed using this repository is reported in the following article. Raw datas are available upon request.
+
+[Ocket, E. et al. _Lipid-induced Caveolin1-Lipid droplet trafficking is associated with lipid droplet growth._ bioRxiv 2025.12.10.693432 doi:10.64898/2025.12.10.693432.](https://www.biorxiv.org/content/10.64898/2025.12.10.693432v1)
