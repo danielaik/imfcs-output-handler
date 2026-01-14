@@ -273,7 +273,13 @@ class ImageInfo:
             )
             self.fit1_results[:, :, 2] *= 10**12
 
-            self.avr_intensity = tifffile.imread(path_avr_intensity)
+            # Catch to remove trailing singleton dimension
+            temp_avr_intensity = tifffile.imread(path_avr_intensity)
+            if temp_avr_intensity.ndim > 0 and temp_avr_intensity.shape[-1] == 1:
+                temp_avr_intensity = np.squeeze(temp_avr_intensity, axis=-1)
+            self.avr_intensity = temp_avr_intensity
+
+            print(f"read and loaded avr_intensity shape: {self.avr_intensity.shape}\n")
 
             self.is_excel_data_and_avr_intensity_loaded = True
 
