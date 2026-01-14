@@ -18,6 +18,10 @@ def plot_selected_image_full_frame(
     xy_coordinate=None,
 ):
 
+    # Catch to remove trailing singleton dimension
+    if array.ndim > 0 and array.shape[-1] == 1:
+        array = np.squeeze(array, axis=-1)
+
     with output:
 
         if array.ndim != 3:
