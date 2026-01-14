@@ -63,7 +63,7 @@ def get_cfs(
 
     for i in range(height):
         for j in range(width):
-            row_idx = j + (i * height)
+            row_idx = j + (i * width)
             res[i][j] = sheet.iloc[row_idx, 1:]
 
     return res
@@ -95,13 +95,13 @@ def get_fit_results(excel_data: pd.DataFrame, width: int, height: int, sheet_nam
     # Fill N, D, .. valid pixels onwards.
     for i in range(height):
         for j in range(width):
-            row_idx = j + (i * height) + 1
+            row_idx = j + (i * width) + 1
             res[i, j, 1:] = sheet.iloc[row_idx, 2:]
 
     # Fill fitted.
     for i in range(height):
         for j in range(width):
-            row_idx = j + (i * height) + 1
+            row_idx = j + (i * width) + 1
             val = str(sheet.iloc[row_idx, 1])
             if val in ["true", "false"]:
                 val = 1.0 if val == "true" else 0.0
