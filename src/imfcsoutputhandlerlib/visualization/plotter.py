@@ -136,6 +136,10 @@ def plot_intensity_projection(
     fig: plt.figure = None,
 ):
 
+    # Catch to remove trailing singleton dimension
+    if array.ndim > 0 and array.shape[-1] == 1:
+        array = np.squeeze(array, axis=-1)
+
     # Validate input array.
     if array.ndim != 3:
         raise ValueError("Input array must have 3 dimensions (t, h, w).")
