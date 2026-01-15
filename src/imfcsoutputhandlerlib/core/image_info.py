@@ -235,10 +235,24 @@ class ImageInfo:
             param_dict = get_param(excel_data=df, panel_param=panel_param)
             self.lagtimes = get_lagtimes(excel_data=df)
 
+            # Evaulate Overlap settings
+            val = str(param_dict["Overlap"]).strip().lower()
+            if val == "overlap on":
+                is_overlap = True
+            elif val == "overlap off":
+                is_overlap = False
+            else:
+                raise ValueError(
+                    f"Unrecognized Overlap setting: {param_dict['Overlap']!r}"
+                )
+
             self.acf1 = get_cfs(
                 excel_data=df,
                 width=int(param_dict["Image width"]),
                 height=int(param_dict["Image height"]),
+                binx=int(param_dict["Binning X"]),
+                biny=int(param_dict["Binning Y"]),
+                is_overlap=is_overlap,
                 num_lag=self.lagtimes.shape[0],
                 sheet_name="ACF1",
             )
@@ -247,6 +261,9 @@ class ImageInfo:
                 excel_data=df,
                 width=int(param_dict["Image width"]),
                 height=int(param_dict["Image height"]),
+                binx=int(param_dict["Binning X"]),
+                biny=int(param_dict["Binning Y"]),
+                is_overlap=is_overlap,
                 num_lag=self.lagtimes.shape[0],
                 sheet_name="SD (ACF1)",
             )
@@ -254,6 +271,9 @@ class ImageInfo:
                 excel_data=df,
                 width=int(param_dict["Image width"]),
                 height=int(param_dict["Image height"]),
+                binx=int(param_dict["Binning X"]),
+                biny=int(param_dict["Binning Y"]),
+                is_overlap=is_overlap,
                 num_lag=self.lagtimes.shape[0],
                 sheet_name="Fit functions (ACF1)",
             )
@@ -269,17 +289,26 @@ class ImageInfo:
                 excel_data=df,
                 width=int(param_dict["Image width"]),
                 height=int(param_dict["Image height"]),
+                binx=int(param_dict["Binning X"]),
+                biny=int(param_dict["Binning Y"]),
+                is_overlap=is_overlap,
                 sheet_name="Fit Parameters (ACF1)",
             )
             self.fit1_results[:, :, 2] *= 10**12
 
             # Catch to remove trailing singleton dimension
-            temp_avr_intensity = tifffile.imread(path_avr_intensity)
-            if temp_avr_intensity.ndim > 0 and temp_avr_intensity.shape[-1] == 1:
-                temp_avr_intensity = np.squeeze(temp_avr_intensity, axis=-1)
-            self.avr_intensity = temp_avr_intensity
+            fix_array = lambda array: (
+                np.squeeze(array, axis=-1)
+                if array.ndim > 0 and array.shape[-1] == 1
+                else array
+            )
+            self.avr_intensity = fix_array(tifffile.imread(path_avr_intensity))
+
+            # TODO: catch avr intensity, cf and fit results has the same spatial dimension
 
             print(f"read and loaded avr_intensity shape: {self.avr_intensity.shape}\n")
+            print(f"read and loaded fit1_results shape: {self.fit1_results.shape}\n")
+            print(f"read and loaded acf1 shape: {self.acf1.shape}\n")
 
             self.is_excel_data_and_avr_intensity_loaded = True
 

@@ -52,10 +52,6 @@ def get_array_intensity(allimage: AllImage, cell_index: int = None):
     A consistency check may be added in the future.
     """
 
-    fix_array = lambda array: (
-        np.squeeze(array, axis=-1) if array.ndim > 0 and array.shape[-1] == 1 else array
-    )
-
     if cell_index is not None:
         arr_int_single_cell = allimage.get_image_info_from_list(
             cell_index
@@ -66,18 +62,17 @@ def get_array_intensity(allimage: AllImage, cell_index: int = None):
         num_cell = get_total_num_cell(allimage)
 
         # Catch to remove trailing singleton dimension
-        array = fix_array(get_array_intensity(allimage, 0))
+        array = get_array_intensity(allimage, 0)
 
         n, w, h = array.shape
         array_int_all_cell = np.empty((num_cell, n, w, h))
 
         for i in range(num_cell):
 
-            array_int_all_cell[i, :, :, :] = fix_array(
-                allimage.get_image_info_from_list(i).get_variable(
-                    variable_name="avr_intensity"
-                )
-            )
+            array_int_all_cell[i, :, :, :] = allimage.get_image_info_from_list(
+                i
+            ).get_variable(variable_name="avr_intensity")
+
         return array_int_all_cell
 
 

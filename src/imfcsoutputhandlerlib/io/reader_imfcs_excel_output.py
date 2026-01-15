@@ -51,11 +51,22 @@ def get_lagtimes(excel_data: pd.DataFrame):
 
 
 def get_cfs(
-    excel_data: pd.DataFrame, width: int, height: int, num_lag: int, sheet_name: str
+    excel_data: pd.DataFrame,
+    width: int,
+    height: int,
+    binx: int,
+    biny: int,
+    is_overlap: bool,
+    num_lag: int,
+    sheet_name: str,
 ):
     # TODO: slow. can be improved 1) convert panda to numpy 2) Use numpy Directly for Numeric Sheets.
     # Sheet names: "ACF1", "SD (ACF1)", "Fit functions (ACF1)".
     assert sheet_name in excel_data.sheet_names, f"{sheet_name} is not in the sheet"
+    assert binx == biny, "spatial binning does not accept rectangular binning"
+    assert not (
+        (binx != 1) and not is_overlap
+    ), f"does not accept {bin=}, {is_overlap=})"
 
     sheet = excel_data.parse(sheet_name=sheet_name, header=None)
 
@@ -65,6 +76,10 @@ def get_cfs(
         for j in range(width):
             row_idx = j + (i * width)
             res[i][j] = sheet.iloc[row_idx, 1:]
+
+    if binx != 1 and is_overlap:
+        offset = binx - 1
+        res = res[:-offset, :-offset, :]
 
     return res
 
@@ -78,10 +93,22 @@ def get_fit_param(excel_data: pd.DataFrame, width: int, height: int, sheet_name:
     return sheet.iloc[0, 1:].to_list()
 
 
-def get_fit_results(excel_data: pd.DataFrame, width: int, height: int, sheet_name: str):
+def get_fit_results(
+    excel_data: pd.DataFrame,
+    width: int,
+    height: int,
+    binx: int,
+    biny: int,
+    is_overlap: bool,
+    sheet_name: str,
+):
     # TODO: slow. can be improved 1) convert panda to numpy 2) Use numpy Directly for Numeric Sheets.
     # Sheet names: "Fit Parameters (ACF1)", "Fit Parameters (ACF2)", "Fit Parameters (CCF)".
     assert sheet_name in excel_data.sheet_names, f"{sheet_name} is not in the sheet"
+    assert binx == biny, "spatial binning does not accept rectangular binning"
+    assert not (
+        (binx != 1) and not is_overlap
+    ), f"does not accept {bin=}, {is_overlap=})"
 
     sheet = excel_data.parse(sheet_name=sheet_name, header=None)
 
@@ -106,6 +133,10 @@ def get_fit_results(excel_data: pd.DataFrame, width: int, height: int, sheet_nam
             if val in ["true", "false"]:
                 val = 1.0 if val == "true" else 0.0
             res[i, j, 0] = val
+
+    if binx != 1 and is_overlap:
+        offset = binx - 1
+        res = res[:-offset, :-offset, :]
 
     return res
 
