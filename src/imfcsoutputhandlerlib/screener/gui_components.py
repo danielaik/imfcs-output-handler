@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import ipywidgets as widgets
 
 
@@ -25,10 +27,11 @@ class ErrorOutputManager:
         return cls._instance
 
     def display_error(self, message):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.error_output.layout.display = "block"
         with self.error_output:
             self.error_output.clear_output(wait=True)
-            print(f"Error: {message}")
+            print(f"[{timestamp}] ERROR: {message}")
 
     def clear_error(self):
         with self.error_output:

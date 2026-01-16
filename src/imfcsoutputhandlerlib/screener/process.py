@@ -8,6 +8,7 @@ from ..visualization import plotter
 from ..visualization.display_analysis import DisplayAnalysis
 from ..visualization.roi_selector import ROISelector
 from .gui import ImfcsScreenerGUI
+from .gui_components import ErrorOutputManager
 from .logic import ImfcsScreenerLogic
 
 
@@ -36,12 +37,14 @@ class ImfcsScreenerProcess:
         allimage: AllImage,
         roi_selector: ROISelector,
         display_analysis: DisplayAnalysis,
+        error_manager: ErrorOutputManager,
     ):
         self.logic = logic
         self.gui = gui
         self.list_all_image = allimage
         self.roi_selector = roi_selector
         self.display_analysis = display_analysis
+        self.error_manager = error_manager
 
     def display_selected_image(self, key):
         # tiffile read image everytime function is called. Consider storing value for faster performance at expense of memory.
@@ -122,6 +125,14 @@ class ImfcsScreenerProcess:
             current_coordinates = self.list_all_image.get_image_info(
                 key
             ).get_coordinates()
+
+            if current_coordinates is None:
+                self.error_manager.display_error(
+                    "Please make select ROI to display the analyis."
+                )
+                self.display_analysis.kill_plot_analysis()
+                return
+
             im = self.list_all_image.get_image_info(key)
             self.display_analysis.plot_analysis(
                 current_coordinates=current_coordinates, image_info=im

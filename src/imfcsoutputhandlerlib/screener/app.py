@@ -62,6 +62,7 @@ class ImfcsScreenerApp:
             allimage=self.list_all_image,
             roi_selector=self.roi_selector,
             display_analysis=self.display_analysis,
+            error_manager=self.error_manager,
         )
 
         """
@@ -122,7 +123,7 @@ class ImfcsScreenerApp:
             self.error_manager.display_error(str(e))
 
         # Example: Clear and hide the error output after handling.
-        time.sleep(3)
+        time.sleep(1)
         self.error_manager.clear_error()
 
     def on_clear_button_clicked(self, b):
