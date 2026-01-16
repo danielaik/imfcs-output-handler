@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from IPython.display import display
 
 from ..core.all_image import AllImage
+from ..core.state import get_total_processed_files
 from ..visualization.display_analysis import DisplayAnalysis
 from ..visualization.roi_selector import ROISelector
 from .gui import ImfcsScreenerGUI
@@ -32,8 +33,6 @@ class ImfcsScreenerApp:
     error_manager: ErrorOutputManager
 
     def __init__(self, input_path: str, loaded_database: AllImage = None):
-        self.error_manager = ErrorOutputManager()
-        self.gui = ImfcsScreenerGUI(error_manager=self.error_manager)
 
         # Setup from scratch or previously saved database.
         if loaded_database is None:
@@ -47,9 +46,14 @@ class ImfcsScreenerApp:
             )
             self.list_all_image = loaded_database
             print(
-                f"Total files loaded from database: {len(self.list_all_image.list_image_info_object)}"
+                f"Total available files from database: {len(self.list_all_image.list_image_info_object)} \n"
+                f"Total processed files from database: {get_total_processed_files(self.list_all_image)}"
             )
 
+        self.error_manager = ErrorOutputManager()
+        self.gui = ImfcsScreenerGUI(
+            error_manager=self.error_manager, list_all_image_object=self.list_all_image
+        )
         self.roi_selector = ROISelector(output=self.gui.roi_selection_output)
         self.display_analysis = DisplayAnalysis(output=self.gui.analysis_output)
         self.process = ImfcsScreenerProcess(

@@ -65,7 +65,7 @@ class AllImage:
     def get_list_of_image(self):
         return self.list_image_info_object
 
-    def get_image_info_from_list(self, index):
+    def get_image_info_from_list(self, index) -> ImageInfo:
         return self.list_image_info_object[index]
 
     def __repr__(self):

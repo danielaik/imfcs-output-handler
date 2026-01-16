@@ -1,6 +1,8 @@
 import ipywidgets as widgets
 from IPython.display import display
 
+from ..core.all_image import AllImage
+from ..core.state import get_load_raw_progress_default_value
 from .gui_components import ErrorOutputManager
 
 
@@ -38,7 +40,14 @@ class ImfcsScreenerGUI:
 
     layout: widgets.VBox
 
-    def __init__(self, error_manager: ErrorOutputManager):
+    def __init__(
+        self,
+        error_manager: ErrorOutputManager,
+        list_all_image_object: AllImage,
+    ):
+
+        # Default state
+        _percentage_loaded = get_load_raw_progress_default_value(list_all_image_object)
 
         error_output: widgets.Output = error_manager.get_error_output()
 
@@ -48,7 +57,7 @@ class ImfcsScreenerGUI:
 
         # Load raw data with progress bar.
         self.caption_load_raw_data = widgets.HTML(
-            value="<span style='color: blue; font-weight: bold;'>(0) (Optional) load the database all at once, otherwise will be done on the fly</span>"
+            value="<span style='color: blue; font-weight: bold;'>(0) (To-be done once) Load the database all at once, otherwise will be done on the fly</span>"
         )
 
         self.load_raw_start_button = widgets.Button(
@@ -58,9 +67,9 @@ class ImfcsScreenerGUI:
             description="Stop", button_style="danger"
         )
         self.load_raw_progress = widgets.IntProgress(
-            value=0, min=0, max=100, description="Progress:"
+            value=_percentage_loaded, min=0, max=100, description="Progress:"
         )
-        self.load_raw_progress_label = widgets.Label(value="0%")
+        self.load_raw_progress_label = widgets.Label(value=f"{_percentage_loaded}%")
         self.load_raw_output = widgets.Output()
 
         # File selection.

@@ -312,6 +312,9 @@ class ImageInfo:
 
             self.is_excel_data_and_avr_intensity_loaded = True
 
+    def is_ready(self):
+        return self.is_excel_data_and_avr_intensity_loaded
+
     def get_variable(self, variable_name: str):
         """
         Return the value of an instance attribute by name.
