@@ -350,8 +350,10 @@ def plot_combined_analysis_imfcs(
             fig_width_in = widget_width / dpi
             fig_height_in = widget_height / dpi
 
-            # Create a custom grid layout using gridspec.
-            fig = plt.figure(figsize=(fig_width_in, fig_height_in))
+            with plt.ioff():  # prevents Jupyter auto-render outside Output
+                # Create a custom grid layout using gridspec.
+                fig = plt.figure(figsize=(fig_width_in, fig_height_in))
+
             gs = GridSpec(
                 3, 2, figure=fig, wspace=0.1, hspace=0.5
             )  # Updated to 3 rows for flexibility.
@@ -443,7 +445,7 @@ def plot_combined_analysis_imfcs(
                 axs1=ax3a,
                 axs2=ax3b,
             )
-            plt.close(fig)  # supress interactive notebook line output
+
             display(fig)
 
     else:

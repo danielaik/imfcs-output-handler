@@ -78,9 +78,10 @@ class ROISelector:
             fig_width_in = widget_width / dpi
             fig_height_in = widget_height / dpi
 
-            self.fig, self.ax = plt.subplots(figsize=(fig_width_in, fig_height_in))
-            self.ax.imshow(array[index, :, :], cmap=cmap)
-            self.ax.set_title("Drag to select a region-of-interest (ROI)")
+            with plt.ioff():  # prevents Jupyter auto-render outside Output
+                self.fig, self.ax = plt.subplots(figsize=(fig_width_in, fig_height_in))
+                self.ax.imshow(array[index, :, :], cmap=cmap)
+                self.ax.set_title("Drag to select a region-of-interest (ROI)")
 
             # Initialize RectangleSelector.
             self.rectangle_selector = RectangleSelector(
@@ -92,8 +93,9 @@ class ROISelector:
                 minspany=5,
             )  # Minimum size for the rectangle.
 
-            # Display.
             display(widgets.VBox([self.coordinates_label, self.fig.canvas]))
+
+            self.fig.canvas.draw_idle()
 
         self._show_output()
 
