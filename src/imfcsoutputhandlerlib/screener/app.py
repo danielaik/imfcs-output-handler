@@ -128,7 +128,6 @@ class ImfcsScreenerApp:
     def on_clear_button_clicked(self, b):
         """Handle Clear button click."""
         self.gui.output.clear_output()
-        self.gui.roi_selection_output.clear_output()
 
     def on_next_button_clicked(self, b, label):
         """Handle Next button click."""
@@ -137,10 +136,6 @@ class ImfcsScreenerApp:
         next_key = self.logic.get_next_key(current_key)
         self.gui.dropdown.value = next_key
         self.update_selected_filename_label(self.gui.dropdown.value)
-        self.process.display_selected_image(key=self.gui.dropdown.value)
-
-        self.gui.roi_selection_output.clear_output()
-        self.process.set_roi_selection_output(key=self.gui.dropdown.value)
 
         with self.gui.output:
             print(f"click: {label}")
@@ -151,10 +146,6 @@ class ImfcsScreenerApp:
         previous_key = self.logic.get_previous_key(current_key)
         self.gui.dropdown.value = previous_key
         self.update_selected_filename_label(self.gui.dropdown.value)
-        self.process.display_selected_image(key=self.gui.dropdown.value)
-
-        self.gui.roi_selection_output.clear_output()
-        self.process.set_roi_selection_output(key=self.gui.dropdown.value)
 
         with self.gui.output:
             print(f"click: {label}")
@@ -186,7 +177,14 @@ class ImfcsScreenerApp:
 
     def callback_dropdown_showimage(self, change):
         if change is not None:
+            # Trigger Image display window
             self.process.display_selected_image(key=change["new"])
+
+            # Trigger ROI selection window
+            self.process.set_roi_selection_output(key=self.gui.dropdown.value)
+
+            # Trigger Analysis window
+            self.process.set_analysis_output(key=self.gui.dropdown.value)
 
     def on_roi_selection_toggle_change(self, change):
         if change["new"]:
@@ -196,6 +194,7 @@ class ImfcsScreenerApp:
             self.gui.roi_selection_toggle_button.description = "ROI Selection Off"
             self.gui.roi_selection_toggle_button.icon = "toggle-off"
 
+        # Trigger ROI selection window
         self.process.set_roi_selection_output(key=self.gui.dropdown.value)
 
     def on_display_analysis_toggle_change(self, change):
@@ -206,6 +205,7 @@ class ImfcsScreenerApp:
             self.gui.display_analysis_toggle_button.description = "Analysis Off"
             self.gui.display_analysis_toggle_button.icon = "toggle-off"
 
+        # Trigger Analysis window
         self.process.set_analysis_output(key=self.gui.dropdown.value)
 
     def get_AllImage(self) -> AllImage:

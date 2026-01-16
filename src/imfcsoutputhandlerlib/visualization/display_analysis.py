@@ -41,7 +41,6 @@ class DisplayAnalysis:
         self._show_output()
 
     def kill_plot_analysis(self):
-        plt.close("all")
         with self.output:
             self.output.clear_output()
         self._hide_output()
